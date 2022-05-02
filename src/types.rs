@@ -43,6 +43,14 @@ impl Problem {
     }
 }
 
+pub struct TestResult {
+    pub test_id: String,
+    pub input: u32,
+    pub output: String,
+    pub expected: String,
+    pub has_passed: bool,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
