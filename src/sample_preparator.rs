@@ -64,7 +64,7 @@ fn create_testcase(node: ElementRef) -> Option<Testcase> {
         let id = val
             .get(3)
             .map_or("", |m| m.as_str())
-            .parse::<i32>()
+            .parse::<u32>()
             .unwrap();
         let val = ElementRef::wrap(node.next_sibling().unwrap())
             .unwrap()

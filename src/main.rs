@@ -1,5 +1,6 @@
 use rAstCoder::executor::Executor;
 use rAstCoder::sample_preparator::{self, SamplePreparator};
+use rAstCoder::tester::Tester;
 use rAstCoder::types::Problem;
 
 fn main() {
@@ -7,7 +8,7 @@ fn main() {
     // let preparator = SamplePreparator { problem: problem };
     // let dir = preparator.prepare();
     let executor = Executor::new();
-    Executor::build();
-    let (_, output, _) = executor.run(vec![]).unwrap();
-    println!("{}", output);
+    executor.build();
+    // let tester = Tester::new(executor, "./testcase/abc249_a/input".to_string());
+    // tester.test();
 }

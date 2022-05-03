@@ -1,4 +1,5 @@
-﻿use run_script::types::ScriptResult;
+﻿use run_script::{types::ScriptResult, ScriptOptions};
+use std::process::{Command, Stdio};
 
 pub struct Executor {
     source_program_path: String,
@@ -12,16 +13,34 @@ impl Executor {
             execute_program_path: "./playground/a.out".to_string(),
         }
     }
-    pub fn build() -> ScriptResult<(i32, String, String)> {
+    pub fn build(&self) -> ScriptResult<(i32, String, String)> {
         run_script::run_script!(
             r#"
             cargo build --release --offline --quiet --manifest-path=./playground/Cargo.toml
             cp ./playground/target/release/main ./playground/a.out
-            exit 0
              "#
         )
     }
-    pub fn run(self, args: Vec<String>) -> ScriptResult<(i32, String, String)> {
-        run_script::run_script!(self.execute_program_path)
+    pub fn run(&self, script: String) -> String {
+        // Command::new("./playground/a.out")
+        //     .arg("<")
+        //     .arg("./testcase/abc249_a/input/1.txt")
+        //     .spawn()
+        //     .expect("failed")
+        //     .wait();
+        let (a, b, c) = run_script::run_script!(script).unwrap();
+        b
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::executor;
+
+    use super::*;
+    #[test]
+    fn test_run_testcase() {
+        let executor = Executor::new();
+        // executor.run();
     }
 }

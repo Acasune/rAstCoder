@@ -2,7 +2,7 @@
 
 #[derive(Debug)]
 pub struct Testcase {
-    pub id: i32,
+    pub id: u32,
     pub val: String,
     pub case_type: String,
     pub problem_category: String,
@@ -19,19 +19,14 @@ pub struct Problem {
 
 impl Problem {
     pub fn new(contest_type: String, contest_number: u32, problem_category: String) -> Self {
-        let mut contest_id = String::new();
-        let mut problem_id = String::new();
-        let mut url = String::new();
-        write!(&mut contest_id, "{}{}", contest_type, contest_number).unwrap();
-        write!(&mut problem_id, "{}_{}", contest_id, problem_category).unwrap();
-        write!(
-            &mut url,
+        let contest_id = format!("{}{}", contest_type, contest_number);
+        let problem_id = format!("{}_{}", contest_id, problem_category);
+        let url = format!(
             "https://atcoder.jp/contests/{}/tasks/{}",
             //example: "https://atcoder.jp/contests/abc249/tasks/abc249_a"
             contest_id,
             problem_id
-        )
-        .unwrap();
+        );
         Problem {
             contest_type: contest_type,
             contest_number: contest_number,

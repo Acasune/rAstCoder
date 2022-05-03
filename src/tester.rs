@@ -1,71 +1,58 @@
-﻿// This file is modeled after:
-// https://github.com/kenkoooo/competitive-programming-rs/blob/master/src/utils/test_helper.rs
-
-use std::fs::{self, File};
+﻿use std::fs::{self, File};
 use std::io::Read;
 
-use crate::utils::scanner::Scanner;
+use crate::executor::{self, Executor};
 
-pub(crate) struct Tester {
-    input: Vec<(String, Vec<u8>)>,
-    output: Vec<(String, Vec<u8>)>,
+pub struct Tester {
+    executor: Executor,
+    dir: String,
 }
 
 impl Tester {
-    pub fn new(input_directory: &str, output_directory: &str) -> Tester {
-        let input_data = fetch_data_from_directory(input_directory);
-        let output_data = fetch_data_from_directory(output_directory);
+    pub fn new(executor: Executor, dir: String) -> Self {
         Tester {
-            input: input_data,
-            output: output_data,
+            executor: executor,
+            dir: dir,
         }
     }
-    pub fn solve_by_algorithm<F>(self, solution: F)
-    where
-        F: Fn(&mut Scanner<&[u8], &mut Vec<u8>>),
-    {
-        for ((input_label, input), (output_label, output)) in
-            self.input.into_iter().zip(self.output)
-        {
-            println!("Test: {} {}", input_label, output_label);
-            let mut writer = vec![];
-            {
-                let mut sc = Scanner::new(&input[..], &mut writer);
-                solution(&mut sc);
-            }
-            assert_eq!(writer, output);
+    pub fn test(&self) {
+        let mut results = vec![];
+        let problems = fetch_path_from_directory(&self.dir);
+        for problem in problems {
+            let script = self.build_run_script(problem.1);
+            let res = self.executor.run(script);
+            results.push(res);
         }
+        println!("{:?}", results);
+    }
+    fn build_run_script(&self, path_test_data: String) -> String {
+        format!(r#"./playground/a.out < {}"#, path_test_data)
     }
 }
 
-fn fetch_data_from_directory(directory: &str) -> Vec<(String, Vec<u8>)> {
-    let mut file_names = fs::read_dir(directory)
+fn fetch_path_from_directory(directory: &str) -> Vec<(u32, String)> {
+    let mut paths = fs::read_dir(directory)
         .unwrap()
         .map(|result| result.unwrap().path().display().to_string())
         .collect::<Vec<String>>();
-    file_names.sort();
-    file_names
-        .into_iter()
-        .map(|file| {
-            let data = read_file(&file);
-            (file, data)
-        })
-        .collect()
-}
-
-fn read_file(filepath: &str) -> Vec<u8> {
-    let mut file = File::open(filepath).unwrap();
-    let mut buf = Vec::new();
-    file.read_to_end(&mut buf).unwrap();
-    buf
+    paths.sort();
+    let ret = paths
+        .iter()
+        .enumerate()
+        .map(|(idx, path)| ((idx + 1) as u32, path.clone()))
+        .collect();
+    ret
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::executor;
+
     use super::*;
     #[test]
-    fn test_get_test_data() {
-        let files = fetch_data_from_directory("./assets/DSL_1_A/in");
-        assert_eq!("./assets/DSL_1_A/in/DSL_1_A_1.in", files[0].0);
+    fn test_run_testcase() {
+        let executor = Executor::new();
+        let tester = Tester::new(executor, "./testcase/abc249_a/input".to_string());
+        tester.test();
     }
 }
