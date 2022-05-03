@@ -1,8 +1,7 @@
 ﻿use crate::types::{Problem, Testcase};
-
 use futures::executor::block_on;
 use regex::Regex;
-use reqwest::{redirect, Client, StatusCode};
+use reqwest::{blocking, Client};
 use scraper::{node::Element, ElementRef, Html, Selector};
 use std::{
     fmt::Write,
@@ -10,12 +9,13 @@ use std::{
     io::{self, BufReader, Read},
     path::Path,
 };
+use tokio::task::spawn_blocking;
 pub struct SamplePreparator {
     pub problem: Problem,
 }
 
 impl SamplePreparator {
-    pub fn prepare(self) -> String {
+    pub fn prepare(self) -> (String, String) {
         let dir = format!("./testcase/{}", self.problem.problem_id);
         // dir: "./testcase/abc249_a"
         if !Path::new(&dir).exists() {
@@ -31,8 +31,10 @@ impl SamplePreparator {
                 }
             }
         }
+        let input_dir = format!("{}{}", dir, "/input");
+        let output_dir = format!("{}{}", dir, "/output");
 
-        dir
+        (input_dir, output_dir)
     }
 }
 fn get_samples(problem: Problem) -> Result<Vec<Testcase>, Box<dyn std::error::Error>> {
@@ -41,7 +43,8 @@ fn get_samples(problem: Problem) -> Result<Vec<Testcase>, Box<dyn std::error::Er
     let h3_select = Selector::parse("h3").unwrap();
     let mut ret = vec![];
 
-    let res = block_on(block_on(client.get(problem.url).send()).unwrap().text()).unwrap();
+    // let res = block_on(block_on(client.get(&problem.url).send()).unwrap().text()).unwrap();
+    let res = reqwest::blocking::get(&problem.url)?.text()?.to_string();
     let html = Html::parse_document(&res);
     let secs = html.select(&sec_select);
     for sec in secs {

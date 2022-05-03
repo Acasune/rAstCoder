@@ -22,12 +22,6 @@ impl Executor {
         )
     }
     pub fn run(&self, script: String) -> String {
-        // Command::new("./playground/a.out")
-        //     .arg("<")
-        //     .arg("./testcase/abc249_a/input/1.txt")
-        //     .spawn()
-        //     .expect("failed")
-        //     .wait();
         let (a, b, c) = run_script::run_script!(script).unwrap();
         b
     }

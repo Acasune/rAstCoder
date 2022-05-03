@@ -25,10 +25,12 @@ impl Tester {
         let inputs = fetch_path_from_directory(&self.input_dir);
         let expected = fetch_path_from_directory(&self.output_dir);
         for ((idx, input_path), (_, expected_path)) in inputs.iter().zip(expected) {
-            let script = self.build_run_script(input_path.clone());
+            let script = build_run_script(input_path.clone());
             let actual = self.executor.run(script);
             let expected =
                 fs::read_to_string(expected_path).expect("Something went wrong reading the file");
+            println!("actual: {}", actual);
+            println!("expected: {}", expected);
             let result_case = ResultCase {
                 id: *idx,
                 expected: expected,
@@ -37,14 +39,11 @@ impl Tester {
 
             &self.results.insert(*idx, result_case);
         }
-        for (a, b) in &self.results {
-            println!("actual: {}", b.actual);
-            println!("expected: {}", b.expected);
-        }
     }
-    fn build_run_script(&self, path_test_data: String) -> String {
-        format!(r#"./playground/a.out < {}"#, path_test_data)
-    }
+}
+
+fn build_run_script(path_test_data: String) -> String {
+    format!(r#"./playground/a.out < {}"#, path_test_data)
 }
 
 fn fetch_path_from_directory(directory: &str) -> Vec<(u32, String)> {
@@ -63,7 +62,6 @@ fn fetch_path_from_directory(directory: &str) -> Vec<(u32, String)> {
 
 #[cfg(test)]
 mod tests {
-    use crate::executor;
 
     use super::*;
     #[test]
