@@ -8,6 +8,12 @@ pub struct Testcase {
     pub problem_category: String,
 }
 
+pub struct ResultCase {
+    pub id: u32,
+    pub expected: String,
+    pub actual: String,
+}
+
 pub struct Problem {
     pub contest_type: String,
     pub contest_number: u32,

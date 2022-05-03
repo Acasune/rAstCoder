@@ -8,7 +8,12 @@ fn main() {
     // let preparator = SamplePreparator { problem: problem };
     // let dir = preparator.prepare();
     let executor = Executor::new();
-    executor.build();
-    // let tester = Tester::new(executor, "./testcase/abc249_a/input".to_string());
-    // tester.test();
+    let result = executor.build().unwrap();
+    println!("{}", result.1);
+    let mut tester = Tester::new(
+        executor,
+        "./testcase/abc249_a/input".to_string(),
+        "./testcase/abc249_a/output".to_string(),
+    );
+    tester.test();
 }
