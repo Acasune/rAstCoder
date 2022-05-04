@@ -27,7 +27,7 @@ impl Tester {
         let expected = fetch_path_from_directory(&self.output_dir);
         for ((idx, input_path), (_, expected_path)) in inputs.into_iter().zip(expected) {
             let script = build_run_script(input_path.clone());
-            let actual = self.executor.run(script).expect("Compile Error detected");
+            let actual = self.executor.run(&script).expect("Compile Error detected");
             let expected =
                 fs::read_to_string(expected_path).expect("Something went wrong reading the file");
             let result_case = ResultCase {
