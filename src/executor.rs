@@ -1,5 +1,4 @@
-﻿use run_script::{types::ScriptResult, ScriptOptions};
-use std::process::{Command, Stdio};
+﻿use run_script::types::ScriptResult;
 
 pub struct Executor {
     source_program_path: String,
@@ -7,10 +6,10 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new() -> Self {
+    pub fn new(source_program_path: &str, execute_program_path: &str) -> Self {
         Executor {
-            source_program_path: "./playground/main.rs".to_string(),
-            execute_program_path: "./playground/a.out".to_string(),
+            source_program_path: source_program_path.to_string(),
+            execute_program_path: execute_program_path.to_string(),
         }
     }
     pub fn code_build(&self) -> ScriptResult<(i32, String, String)> {
@@ -21,20 +20,18 @@ impl Executor {
              "#
         )
     }
-    pub fn run(&self, script: String) -> String {
-        let (a, b, c) = run_script::run_script!(script).unwrap();
-        b
+    pub fn run(&self, script: String) -> ScriptResult<(i32, String, String)> {
+        run_script::run_script!(script)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::executor;
 
     use super::*;
     #[test]
     fn test_run_testcase() {
-        let executor = Executor::new();
+        // let executor = Executor::new();
         // executor.run();
     }
 }

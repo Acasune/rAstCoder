@@ -19,20 +19,28 @@ const dx: [i64; 4] = [1, 1, -1, -1];
 
 fn main() {
     input! {
-        x:[i64;7]
+        mut S:Chars
     }
-
-    let mut taka =
-        x[1] * x[0] * (x[6] / (x[0] + x[2])) + x[1] * i64::min(x[0], (x[6] % (x[0] + x[2])));
-    let mut ao =
-        x[4] * x[3] * (x[6] / (x[3] + x[5])) + x[4] * i64::min(x[3], (x[6] % (x[3] + x[5])));
-    // println!("{}", taka);
-    // println!("{}", ao);
-    if taka == ao {
-        println!("{}", "Draw");
-    } else if taka > ao {
-        println!("{}", "Takahashi");
+    S.sort();
+    let mut flg = false;
+    let mut flg2 = false;
+    for i in 0..S.len() - 1 {
+        if S[i] == S[i + 1] {
+            println!("{}", "No");
+            return;
+        }
+    }
+    for i in 0..S.len() {
+        if 'a' as u8 <= S[i] as u8 && S[i] as u8 <= 'z' as u8 {
+            flg = true;
+        }
+        if 'A' as u8 <= S[i] as u8 && S[i] as u8 <= 'Z' as u8 {
+            flg2 = true;
+        }
+    }
+    if flg && flg2 {
+        println!("{}", "Yes");
     } else {
-        println!("{}", "Aoki");
+        println!("{}", "No");
     }
 }

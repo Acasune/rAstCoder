@@ -1,6 +1,7 @@
 ﻿use crate::types::ArgOption;
 use crate::types::Problem;
 use anyhow::{anyhow, Context, Result};
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::{HashSet, VecDeque};
 
@@ -11,15 +12,17 @@ pub struct ArgParser {
 
 impl ArgParser {
     pub fn build(args: Vec<String>) -> Result<Self> {
-        let re = Regex::new(r"(abc|arc|agc)(\d+)([A-Ha-h])").unwrap();
-        // todo => generalization
+        lazy_static! {
+            static ref PROBLEM_ID: Regex =  Regex::new(r"(abc|arc|agc)(\d+)([A-Ha-h])").unwrap();
+            // todo => generalization
+        }
         let mut args = VecDeque::from(args);
         args.pop_front().with_context(|| "No argument")?;
-        let contest_id = args.pop_front().with_context(|| "No argument")?;
-        if !re.is_match(&contest_id) {
+        let problem_id = args.pop_front().with_context(|| "No argument")?;
+        if !PROBLEM_ID.is_match(&problem_id) {
             return Err(anyhow!("No contest"));
         }
-        let matches = re.captures(&contest_id).unwrap();
+        let matches = PROBLEM_ID.captures(&problem_id).unwrap();
 
         let contest_type = matches[1].to_string();
         let contest_number = matches[2].to_string().parse::<u32>().unwrap();

@@ -3,7 +3,7 @@
 #[derive(Debug)]
 pub struct Testcase {
     pub id: u32,
-    pub val: String,
+    pub content: String,
     pub case_type: String,
     pub problem_category: String,
 }
