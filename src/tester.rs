@@ -1,4 +1,4 @@
-﻿use std::collections::HashMap;
+﻿use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, File};
 use std::io::Read;
 
@@ -9,7 +9,7 @@ pub struct Tester {
     executor: Executor,
     input_dir: String,
     output_dir: String,
-    pub results: HashMap<u32, ResultCase>,
+    pub results: BTreeMap<u32, ResultCase>,
 }
 
 impl Tester {
@@ -18,7 +18,7 @@ impl Tester {
             executor: executor,
             input_dir: input_dir,
             output_dir: output_dir,
-            results: HashMap::new(),
+            results: BTreeMap::new(),
         }
     }
     pub fn test(&mut self) {
@@ -29,8 +29,6 @@ impl Tester {
             let actual = self.executor.run(script);
             let expected =
                 fs::read_to_string(expected_path).expect("Something went wrong reading the file");
-            println!("actual: {}", actual);
-            println!("expected: {}", expected);
             let result_case = ResultCase {
                 id: *idx,
                 expected: expected,

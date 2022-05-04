@@ -13,7 +13,7 @@ impl Executor {
             execute_program_path: "./playground/a.out".to_string(),
         }
     }
-    pub fn build(&self) -> ScriptResult<(i32, String, String)> {
+    pub fn code_build(&self) -> ScriptResult<(i32, String, String)> {
         run_script::run_script!(
             r#"
             cargo build --release --offline --quiet --manifest-path=./playground/Cargo.toml

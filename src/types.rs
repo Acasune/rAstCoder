@@ -14,6 +14,12 @@ pub struct ResultCase {
     pub actual: String,
 }
 
+impl ResultCase {
+    pub fn valid(&self) -> bool {
+        self.expected == self.actual
+    }
+}
+
 pub struct Problem {
     pub contest_type: String,
     pub contest_number: u32,
@@ -50,6 +56,18 @@ pub struct TestResult {
     pub output: String,
     pub expected: String,
     pub has_passed: bool,
+}
+
+#[derive(Debug, Hash, Eq, PartialEq)]
+pub enum ArgOption {
+    Test(char), // todo
+                // Add other enum such as Submit
+}
+
+enum ContestType {
+    ABC,
+    ARC,
+    AGC,
 }
 
 #[cfg(test)]
