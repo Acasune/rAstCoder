@@ -13,7 +13,7 @@ pub struct ArgParser {
 impl ArgParser {
     pub fn build(args: Vec<String>) -> Result<Self> {
         lazy_static! {
-            static ref PROBLEM_ID: Regex =  Regex::new(r"(abc|arc|agc)(\d+)([A-Ha-h])").unwrap();
+            static ref PROBLEM_ID: Regex =  Regex::new(r"^(abc|arc|agc)(\d+)([A-Ha-h])$").unwrap();
             // todo => generalization
         }
         let mut args = VecDeque::from(args);
@@ -39,7 +39,7 @@ impl ArgParser {
                     't' => {
                         let _ = options.insert(ArgOption::Test('t'));
                     }
-                    _ => panic!("Unexpected option"),
+                    _ => return Err(anyhow!("Unexpected option format.")),
                 }
             }
         }
@@ -58,8 +58,42 @@ mod tests {
 
     use super::*;
     #[test]
-    fn test_parse_args() {
-        let arg_parser = ArgParser::build(vec!["abc249a".to_string(), "-t".to_string()]).unwrap();
+    fn test_parse_args_ok() {
+        let arg_parser = ArgParser::build(vec![
+            "rAstCoder/target/debug/rAstCoder".to_string(),
+            "abc249a".to_string(),
+            "-t".to_string(),
+        ])
+        .unwrap();
         assert_eq!("abc249_a", arg_parser.problem.problem_id);
+    }
+
+    #[test]
+    fn test_parse_args_ok_with_no_option() {
+        let arg_parser = ArgParser::build(vec![
+            "rAstCoder/target/debug/rAstCoder".to_string(),
+            "abc249a".to_string(),
+        ])
+        .unwrap();
+        assert_eq!("abc249_a", arg_parser.problem.problem_id);
+    }
+
+    #[test]
+    fn test_parse_args_ng_wrong_testcase() {
+        let arg_parser = ArgParser::build(vec![
+            "rAstCoder/target/debug/rAstCoder".to_string(),
+            "abc249ab".to_string(),
+            "-t".to_string(),
+        ]);
+        assert!(arg_parser.is_err());
+    }
+    #[test]
+    fn test_parse_args_ng_wrong_option() {
+        let arg_parser = ArgParser::build(vec![
+            "rAstCoder/target/debug/rAstCoder".to_string(),
+            "abc249a".to_string(),
+            "-a".to_string(),
+        ]);
+        assert!(arg_parser.is_err());
     }
 }
