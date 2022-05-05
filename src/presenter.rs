@@ -1,9 +1,9 @@
-﻿use std::collections::{BTreeMap, HashMap};
+﻿use crate::executor::{self, Executor};
+use crate::types::ResultCase;
+use colour;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, File};
 use std::io::Read;
-
-use crate::executor::{self, Executor};
-use crate::types::ResultCase;
 
 pub struct Presenter {}
 
@@ -12,21 +12,20 @@ impl Presenter {
         for result in results_set.iter() {
             let expected = &result.1.expected;
             let actual = &result.1.actual;
-            let flg = result.1.valid();
             println!("--*--*--*--");
-            println!("Case {}:", result.0);
+            print!("Case {}: ", result.0);
             if result.1.valid() {
-                println!("Passed :");
+                colour::green_ln!("AC ✅");
                 println!("Expected");
-                println!("{}", *expected);
-                println!("Actual");
-                println!("{}", *actual);
+                println!("{}", expected.trim());
+                println!("Output");
+                println!("{}", actual.trim());
             } else {
-                println!("Wrong");
+                colour::red_ln!("Wrong ❌");
                 println!("Expected");
-                println!("{}", expected);
-                println!("Actual");
-                println!("{}", actual);
+                println!("{}", expected.trim());
+                println!("Output");
+                println!("{}", actual.trim());
             }
         }
     }
