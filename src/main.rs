@@ -1,3 +1,5 @@
+use std::env;
+
 use rAstCoder::arg_parser::ArgParser;
 use rAstCoder::executor::Executor;
 use rAstCoder::presenter::Presenter;
@@ -14,7 +16,8 @@ cp ./playground/target/release/main ./playground/a.out
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let parsed = ArgParser::build(args).unwrap();
+    let working_dir = env::current_dir().unwrap().display().to_string();
+    let parsed = ArgParser::build(args, working_dir).unwrap();
     let preparator = SamplePreparator::new(parsed.problem);
     let (input_dir, output_dir) = preparator.prepare().unwrap();
     let executor = Executor::new(source_program_path, execute_program_path);

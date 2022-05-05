@@ -20,6 +20,7 @@ impl ResultCase {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Problem {
     pub contest_type: String,
     pub contest_number: u32,
