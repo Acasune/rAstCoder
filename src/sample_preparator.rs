@@ -1,11 +1,10 @@
 ﻿use crate::types::{Problem, Testcase};
-use futures::executor::block_on;
+use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
-use reqwest::{blocking, Client};
-use scraper::{node::Element, ElementRef, Html, Selector};
+use reqwest;
+use scraper::{ElementRef, Html, Selector};
 use std::{
-    fmt::Write,
     fs::{self, File},
     io::{self, BufReader, Read},
     path::Path,
@@ -16,11 +15,20 @@ pub struct SamplePreparator {
 }
 
 impl SamplePreparator {
-    pub fn prepare(self) -> (String, String) {
+    pub fn new(problem: Problem) -> Self {
+        SamplePreparator { problem: problem }
+    }
+    pub fn prepare(self) -> Result<(String, String)> {
         let dir = format!("./testcase/{}", self.problem.problem_id);
         // dir: "./testcase/abc249_a"
+        let input_dir = format!("{}{}", dir, "/input");
+        let output_dir = format!("{}{}", dir, "/output");
         if !Path::new(&dir).exists() {
-            let testcases = get_samples(self.problem).unwrap();
+            let body = reqwest::blocking::get(self.problem.url)?
+                .text()?
+                .to_string();
+            let html = Html::parse_document(&body);
+            let testcases = get_samples(html).unwrap();
             for case in testcases {
                 let dir_internal = format!("{}/{}", dir, case.case_type);
                 let path = format!("{}/{}.txt", dir_internal, case.id);
@@ -32,24 +40,22 @@ impl SamplePreparator {
                 }
             }
         }
-        let input_dir = format!("{}{}", dir, "/input");
-        let output_dir = format!("{}{}", dir, "/output");
-
-        (input_dir, output_dir)
+        Ok((input_dir, output_dir))
     }
 }
-fn get_samples(problem: Problem) -> Result<Vec<Testcase>, Box<dyn std::error::Error>> {
-    let section_selector = Selector::parse("section").unwrap();
-    let h3_selector = Selector::parse("h3").unwrap();
-    let mut ret = vec![];
 
-    let body = reqwest::blocking::get(&problem.url)?.text()?.to_string();
-    let html = Html::parse_document(&body);
+fn get_samples(html: Html) -> Result<Vec<Testcase>, Box<dyn std::error::Error>> {
+    lazy_static! {
+        static ref section_selector: Selector = Selector::parse("section").unwrap();
+        static ref h3_selector: Selector = Selector::parse("h3").unwrap();
+    }
+
+    let mut ret = vec![];
     let sections = html.select(&section_selector);
     for sec in sections {
         let mut h3el = sec.select(&h3_selector);
-        while let Some(cand) = h3el.next() {
-            let tst = create_testcase(cand);
+        while let Some(sample_node) = h3el.next() {
+            let tst = create_testcase(sample_node);
             if let Some(t) = tst {
                 ret.push(t);
             }
@@ -57,12 +63,12 @@ fn get_samples(problem: Problem) -> Result<Vec<Testcase>, Box<dyn std::error::Er
     }
     Ok(ret)
 }
-fn create_testcase(node: ElementRef) -> Option<Testcase> {
+fn create_testcase(sample_node: ElementRef) -> Option<Testcase> {
     lazy_static! {
         static ref SAMPLE_SECTION: Regex = Regex::new(r"Sample ((In|Out)put) (\d+)").unwrap();
     }
 
-    let txt = &node.inner_html().to_string();
+    let txt = &sample_node.inner_html().to_string();
 
     if let Some(val) = SAMPLE_SECTION.captures(txt) {
         let case_type = val.get(1).map_or("", |m| m.as_str());
@@ -71,7 +77,7 @@ fn create_testcase(node: ElementRef) -> Option<Testcase> {
             .map_or("", |m| m.as_str())
             .parse::<u32>()
             .unwrap();
-        let content = ElementRef::wrap(node.next_sibling().unwrap())
+        let content = ElementRef::wrap(sample_node.next_sibling().unwrap())
             .unwrap()
             .inner_html()
             .to_string();
@@ -90,9 +96,69 @@ fn create_testcase(node: ElementRef) -> Option<Testcase> {
 mod tests {
     use super::*;
     #[test]
-    fn test_create_problem_structure() {
-        let problem = Problem::new("abc".to_string(), 249, "a".to_string());
-        let a = get_samples(problem);
-        dbg!(a);
+    fn test_html_to_testcases() {
+        let body = include_str!("../test_resources/abc249_a");
+        let html = Html::parse_document(&body);
+        let testcases = get_samples(html).unwrap();
+        assert_eq!(
+            testcases[0],
+            Testcase {
+                id: 1,
+                content: "4 3 3 6 2 5 10\n".to_string(),
+                case_type: "input".to_string(),
+                problem_category: "A".to_string(),
+            },
+        );
+        assert_eq!(
+            testcases[1],
+            Testcase {
+                id: 1,
+                content: "Takahashi\n".to_string(),
+                case_type: "output".to_string(),
+                problem_category: "A".to_string()
+            }
+        );
+    }
+    #[test]
+    fn test_htmlnode_to_testcase_ok() {
+        lazy_static! {
+            static ref h3_selector: Selector = Selector::parse("h3").unwrap();
+        }
+        let source = r#"<div class="part">
+        <section>
+        <h3>Sample Input 1</h3><pre>4 3 3 6 2 5 10
+        </pre>
+        </section>
+        </div>"#;
+        let html = Html::parse_document(&source);
+        let target = html.select(&h3_selector).next().unwrap();
+        let testcase = create_testcase(target);
+        assert_eq!(
+            testcase.unwrap(),
+            Testcase {
+                id: 1,
+                content: "4 3 3 6 2 5 10\n        ".to_string(),
+                case_type: "input".to_string(),
+                problem_category: "A".to_string()
+            }
+        );
+    }
+    #[test]
+    fn test_htmlnode_to_testcase_ng() {
+        lazy_static! {
+            static ref h3_selector: Selector = Selector::parse("h3").unwrap();
+        }
+        let source = r#"<div class="part">
+        <section>
+        <h3>Problem Statement</h3><p>Takahashi and Aoki decided to jog.<br />
+        Takahashi repeats the following: "walk at <var>B</var> meters a second for <var>A</var> seconds and take a rest for <var>C</var> seconds."<br />
+        Aoki repeats the following: "walk at <var>E</var> meters a second for <var>D</var> seconds and take a rest for <var>F</var> seconds."<br />
+        When <var>X</var> seconds have passed since they simultaneously started to jog, which of Takahashi and Aoki goes ahead?</p>
+        </section>
+        </div>"#;
+        let html = Html::parse_document(&source);
+        let target = html.select(&h3_selector).next().unwrap();
+        let testcase = create_testcase(target);
+        assert_eq!(testcase, None);
     }
 }

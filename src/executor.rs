@@ -30,10 +30,10 @@ mod tests {
     #[test]
     fn test_build_success() {
         let build_script = r#"
-        rustc ./resources/test_resources/case1_success.rs --out-dir ./resources/test_resources/
+        rustc .test_resources/case1_success.rs --out-dir ./test_resources/
          "#;
         let run_script = r#"
-         ./resources/test_resources/case1_success
+         ./test_resources/case1_success
           "#;
         let executor = Executor::new(source_program_path, execute_program_path);
         executor.code_build(build_script).unwrap();
@@ -44,7 +44,7 @@ mod tests {
     #[test]
     fn test_compile_error() {
         let build_script = r#"
-        rustc ./resources/test_resources/case2_compile_error.rs --out-dir ./resources/test_resources/
+        rustc ./test_resources/case2_compile_error.rs --out-dir ./test_resources/
          "#;
         let executor = Executor::new(source_program_path, execute_program_path);
         let (status, _, error) = executor.code_build(build_script).unwrap();
@@ -53,10 +53,10 @@ mod tests {
     #[test]
     fn test_runtime_error() {
         let build_script = r#"
-        rustc ./resources/test_resources/case3_runtime_error.rs --out-dir ./resources/test_resources/
+        rustc ./test_resources/case3_runtime_error.rs --out-dir ./test_resources/
          "#;
         let run_script = r#"
-         ./resources/test_resources/case3_runtime_error
+         ./test_resources/case3_runtime_error
           "#;
         let executor = Executor::new(source_program_path, execute_program_path);
         executor.code_build(build_script).unwrap();

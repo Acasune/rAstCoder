@@ -1,6 +1,6 @@
 ﻿use std::fmt::Write;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Testcase {
     pub id: u32,
     pub content: String,
