@@ -1,6 +1,4 @@
-﻿use std::fmt::Write;
-
-#[derive(Debug, PartialEq)]
+﻿#[derive(Debug, PartialEq)]
 pub struct Testcase {
     pub id: u32,
     pub content: String,
@@ -64,13 +62,6 @@ pub enum ArgOption {
     Test(char), // todo
                 // Add other enum such as Submit
 }
-
-enum ContestType {
-    ABC,
-    ARC,
-    AGC,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

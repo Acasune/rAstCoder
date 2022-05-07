@@ -26,7 +26,6 @@ impl Tester {
 
         for ((idx, input_path), (_, expected_path)) in inputs.into_iter().zip(expected) {
             let run_script = format!("{} < {}", execute_program_path, input_path);
-            println!("{}", run_script);
             let actual = Executor::run(&run_script).expect("Compile Error detected");
             let expected =
                 fs::read_to_string(expected_path).expect("Something went wrong reading the file");
@@ -36,7 +35,7 @@ impl Tester {
                 actual: actual.1,
             };
 
-            &self.results.insert(idx, result_case);
+            let _ = &self.results.insert(idx, result_case);
         }
         Ok(())
     }
@@ -54,20 +53,4 @@ fn fetch_path_from_directory(directory: &str) -> Vec<(u32, String)> {
         .map(|(idx, path)| ((idx + 1) as u32, path.clone()))
         .collect();
     ret
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    #[test]
-    fn test_run_testcase() {
-        // let executor = Executor::new();
-        // let mut tester = Tester::new(
-        //     // executor,
-        //     "./testcase/abc249_a/input".to_string(),
-        //     "./testcase/abc249_a/output".to_string(),
-        // );
-        // tester.test();
-    }
 }

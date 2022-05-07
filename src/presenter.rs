@@ -1,9 +1,6 @@
-﻿use crate::executor::{self, Executor};
-use crate::types::ResultCase;
+﻿use crate::types::ResultCase;
 use colour;
-use std::collections::{BTreeMap, HashMap};
-use std::fs::{self, File};
-use std::io::Read;
+use std::collections::BTreeMap;
 
 pub struct Presenter {}
 

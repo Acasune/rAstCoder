@@ -4,11 +4,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest;
 use scraper::{ElementRef, Html, Selector};
-use std::{
-    fs::{self, File},
-    io::{self, BufReader, Read},
-    path::Path,
-};
+use std::path::Path;
 
 pub struct SamplePreparator {
     pub problem: Problem,
@@ -32,8 +28,8 @@ impl SamplePreparator {
             for case in testcases {
                 let dir_internal = format!("{}/{}", dir, case.case_type);
                 let path = format!("{}/{}.txt", dir_internal, case.id);
-                fs::create_dir_all(&dir_internal);
-                let mut file = fs::File::create(path).unwrap();
+                std::fs::create_dir_all(&dir_internal)?;
+                let mut file = std::fs::File::create(path).unwrap();
                 {
                     use std::io::Write;
                     file.write_all(case.content.as_bytes()).unwrap();
@@ -46,14 +42,14 @@ impl SamplePreparator {
 
 fn get_samples(html: Html) -> Result<Vec<Testcase>, Box<dyn std::error::Error>> {
     lazy_static! {
-        static ref section_selector: Selector = Selector::parse("section").unwrap();
-        static ref h3_selector: Selector = Selector::parse("h3").unwrap();
+        static ref SECTION_SELECTOR: Selector = Selector::parse("section").unwrap();
+        static ref H3_SELECTOR: Selector = Selector::parse("h3").unwrap();
     }
 
     let mut ret = vec![];
-    let sections = html.select(&section_selector);
+    let sections = html.select(&SECTION_SELECTOR);
     for sec in sections {
-        let mut h3el = sec.select(&h3_selector);
+        let mut h3el = sec.select(&H3_SELECTOR);
         while let Some(sample_node) = h3el.next() {
             let tst = create_testcase(sample_node);
             if let Some(t) = tst {
@@ -122,7 +118,7 @@ mod tests {
     #[test]
     fn test_htmlnode_to_testcase_ok() {
         lazy_static! {
-            static ref h3_selector: Selector = Selector::parse("h3").unwrap();
+            static ref H3_SELECTOR: Selector = Selector::parse("h3").unwrap();
         }
         let source = r#"<div class="part">
         <section>
@@ -131,7 +127,7 @@ mod tests {
         </section>
         </div>"#;
         let html = Html::parse_document(&source);
-        let target = html.select(&h3_selector).next().unwrap();
+        let target = html.select(&H3_SELECTOR).next().unwrap();
         let testcase = create_testcase(target);
         assert_eq!(
             testcase.unwrap(),
@@ -146,7 +142,7 @@ mod tests {
     #[test]
     fn test_htmlnode_to_testcase_ng() {
         lazy_static! {
-            static ref h3_selector: Selector = Selector::parse("h3").unwrap();
+            static ref H3_SELECTOR: Selector = Selector::parse("h3").unwrap();
         }
         let source = r#"<div class="part">
         <section>
@@ -157,7 +153,7 @@ mod tests {
         </section>
         </div>"#;
         let html = Html::parse_document(&source);
-        let target = html.select(&h3_selector).next().unwrap();
+        let target = html.select(&H3_SELECTOR).next().unwrap();
         let testcase = create_testcase(target);
         assert_eq!(testcase, None);
     }

@@ -4,7 +4,6 @@ use anyhow::{anyhow, Context, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::{HashSet, VecDeque};
-use std::path::PathBuf;
 
 #[derive(Debug, PartialEq)]
 pub struct ArgParser {
@@ -26,15 +25,7 @@ impl ArgParser {
         // args example: [$working_dir,"abc234", "a.rs","-t"]
         let mut args = VecDeque::from(args);
         args.pop_front();
-        let binary_dir = format!(
-            "{}{}",
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .to_str()
-                .unwrap()
-                .to_string(),
-            "/target/debug"
-        );
-        println!("{}", binary_dir);
+        let binary_dir = format!("{}{}", working_dir, "/../target/debug");
 
         let problem_id = args.pop_front().with_context(|| "No argument")?;
         if !PROBLEM_ID.is_match(&problem_id) {
@@ -100,7 +91,7 @@ mod tests {
             problem: Problem::new("abc".to_string(), 249, "a".to_string()),
             option: HashSet::from([types::ArgOption::Test('t')]),
             source_path: "working_dir/a.rs".to_string(),
-            binary_path: "rAstCoder/target/debug/abc249-a".to_string(),
+            binary_path: "working_dir/../target/debug/abc249-a".to_string(),
             target: "abc249-a".to_string(),
         };
         assert_eq!(expected, arg_parser);
@@ -121,7 +112,7 @@ mod tests {
             problem: Problem::new("abc".to_string(), 249, "a".to_string()),
             option: HashSet::<ArgOption>::new(),
             source_path: "working_dir/a.rs".to_string(),
-            binary_path: "rAstCoder/target/debug/abc249-a".to_string(),
+            binary_path: "working_dir/../target/debug/abc249-a".to_string(),
             target: "abc249-a".to_string(),
         };
         assert_eq!(expected, arg_parser);
