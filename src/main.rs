@@ -5,11 +5,10 @@ use rAstCoder::executor::Executor;
 use rAstCoder::presenter::Presenter;
 use rAstCoder::sample_preparator::SamplePreparator;
 use rAstCoder::tester::Tester;
-use rAstCoder::types::Problem;
 
-const source_program_path: &str = "./playground/main.rs";
-const execute_program_path: &str = "./playground/a.out";
-const build_script: &str = r#"
+const SOURCE_PROGRAM_PATH: &str = "./playground/main.rs";
+const EXECUTE_PROGRAM_PATH: &str = "./playground/a.out";
+const BUILD_SCRIPT: &str = r#"
 cargo build --release --offline --quiet --manifest-path=./playground/Cargo.toml
 cp ./playground/target/release/main ./playground/a.out
  "#;
@@ -20,8 +19,8 @@ fn main() {
     let parsed = ArgParser::build(args, working_dir).unwrap();
     let preparator = SamplePreparator::new(parsed.problem);
     let (input_dir, output_dir) = preparator.prepare().unwrap();
-    let executor = Executor::new(source_program_path, execute_program_path);
-    let result = executor.code_build(build_script).unwrap();
+    let executor = Executor::new(SOURCE_PROGRAM_PATH, EXECUTE_PROGRAM_PATH);
+    let result = executor.code_build(BUILD_SCRIPT).unwrap();
     let mut tester = Tester::new(executor, input_dir, output_dir);
     tester.test();
     let mut presenter = Presenter {};
