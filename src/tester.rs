@@ -7,27 +7,27 @@ use crate::executor::Executor;
 use crate::types::ResultCase;
 
 pub struct Tester {
-    executor: Executor,
     input_dir: String,
     output_dir: String,
     pub results: BTreeMap<u32, ResultCase>,
 }
 
 impl Tester {
-    pub fn new(executor: Executor, input_dir: String, output_dir: String) -> Self {
+    pub fn new(input_dir: String, output_dir: String) -> Self {
         Tester {
-            executor: executor,
             input_dir: input_dir,
             output_dir: output_dir,
             results: BTreeMap::new(),
         }
     }
-    pub fn test(&mut self) -> Result<(), Error> {
+    pub fn test(&mut self, execute_program_path: &str) -> Result<(), Error> {
         let inputs = fetch_path_from_directory(&self.input_dir);
         let expected = fetch_path_from_directory(&self.output_dir);
+
         for ((idx, input_path), (_, expected_path)) in inputs.into_iter().zip(expected) {
-            let script = build_run_script(input_path.clone());
-            let actual = self.executor.run(&script).expect("Compile Error detected");
+            let run_script = format!("{} < {}", execute_program_path, input_path);
+            println!("{}", run_script);
+            let actual = Executor::run(&run_script).expect("Compile Error detected");
             let expected =
                 fs::read_to_string(expected_path).expect("Something went wrong reading the file");
             let result_case = ResultCase {
@@ -40,10 +40,6 @@ impl Tester {
         }
         Ok(())
     }
-}
-
-fn build_run_script(path_test_data: String) -> String {
-    format!(r#"./playground/a.out < {}"#, path_test_data)
 }
 
 fn fetch_path_from_directory(directory: &str) -> Vec<(u32, String)> {
